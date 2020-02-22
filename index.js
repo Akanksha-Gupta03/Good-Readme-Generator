@@ -25,43 +25,28 @@ async function main(){
         },
         {
             type:"input",
-            message:"Table content for your readme?",
-            name:"contents"
-        },
-        {
-            type:"input",
             message:"What are the steps required to install your project?",
             name:"installation"
         },
         {
             type:"input",
-            message:"Provide instructions  for use. Include screenshots as needed",
-            name:"instructions"
+            message:"Provide instructions and examples for use.",
+            name:"usage"
         },
         {
             type:"input",
-            message:"Provide instructions  examples for use. Include screenshots as needed",
-            name:"instructionExample"
-        },
-        {
-            type:"input",
-            message:"Your License name?",
+            message:"Would you like to add a license for your repository? Please input here.",
             name:"licenseName"
         },
         {
             type:"input",
-            message:"Your license URL",
+            message:"Provide ypur License URL.",
             name:"licenseURL"
         },
         {
             type:"input",
-            message:"How many contributors are in your readme?",
-            name:"contributors_no"
-        },
-        {
-            type:"input",
-            message:"Provide the name of the contributors",
-            name:"contributors_name"
+            message:"Would you like to add the contributors for your repository? please enter the names of contributors here.",
+            name:"contributorsName"
         },
         {
             type:"input",
@@ -70,7 +55,7 @@ async function main(){
         },
         {
             type:"input",
-            message:" write tests for your application. Then provide examples on how to run them.",
+            message:"If you would like write tests for your application. Then provide examples on how to run them.",
             name:"tests"
         }
     ]);
@@ -81,50 +66,77 @@ async function main(){
     const projectDescription = userResponse.description;
     const tableOfContent = userResponse.contents;
     const installationProcess = userResponse.installation;
-    const instructions = userResponse.instructions;
-    const instructionExample= userResponse.instructionExample;
+    const usage = userResponse.usage;
     const licenseName= userResponse.licenseName;
     const licenseURL = userResponse.licenseURL;
-    const contributorsNo = userResponse.contributors_no;
-    const contributorsName = userResponse.contributors_name;
-    const contributorGitName = userResponse.contributorGitUsername;
+    const contributorsName = userResponse.contributorsName;
     const tests = userResponse.tests;
-    const gitResponse = await axios.get(`https://api.github.com/users/${username}`);
+    const gitResponse = await axios.get(`https://api.github.com/users/${gitUserName}`);
     const gitData = gitResponse.data;
-    const gitName = gitData.login;
-    const gitEmail = gitData.email;
-    const gitlocation = gitData.location;
-    const gitUrl = gitData.html_url;
-    const gitProfileImage = gitData.avatar_url;
+    // const gitName = gitData.login;
+    // const gitEmail = gitData.email;
+    // const gitlocation = gitData.location;
+    // const gitUrl = gitData.html_url;
+    // const gitProfileImage = gitData.avatar_url;
+    console.log(gitData)
+
+      //convert contributors section into an array
+      var contributorGitName = userResponse.contributorGitUsername.split(",");
+      console.log(contributorGitName);
+      
+      var info = "";
+      for (var i = 0; i < contributorGitName.length; i++){   
+          console.log(contributorGitName[i]);
+          var contriInfo = await axios.get(`https://api.github.com/users/${contributorGitName[i]}`);
+          var contributorProfile = contriInfo.data.avatar_url;
+          var contributorURL = contriInfo.data.html_url;
+          info = info + `\n[![ProfilePicture](${contributorProfile})](${contributorURL})`
+      }
+      console.log(info);
 
 var result = (`
-${projectTitle}
-${projectDescription}
-${tableOfContent}
-## Installation
+![badge](https://img.shields.io/badge/<Badge>-<${gitUserName}>-<ff69b4>)
+# ${projectTitle}
+\n ${projectDescription}
+
+## Table of Contents
+* [Installation](#Installation)
+* [Usage](#Usage)
+* [Contributors](#Contributors)
+* [Tests](#Tests)
+* [License](#license)
+
+\n## Installation
 \`\`\`
 ${installationProcess}
 \`\`\`
-## Instructions 
-${instructions}
+
+\n## Usage
 \`\`\`
-${instructionExample}
+${usage}
 \`\`\`
-## License
-This project is licensed under the ${licenseName} - see the ${licenseURL} file for details.
-## contributors
-${contributorsName}
-${contributorGitUsername}
-\n![ProfileImage](${gitContributorProfileImage})
-\nLink: ${gitConributorUrl}
-## Author
-\n![Profile](${gitProfileImage})
-**${gitName}**
-\nEmail: ${gitlocation}
-\nGitHub: ${gitUrl}
+
+\n## Contributors
+${info}
+
+\n## Tests
+\n${tests}
+
+
+\n## License
+This project is licensed under the ${licenseName} 
+\n[![license](https://img.shields.io/github/license/DAVFoundation/captain-n3m0.svg?style=flat-square)](${licenseURL})
+
+\n ##Author
+\n${gitData.name}
+
+\n![ProfilePicture](${gitData.avatar_url})
+\nGithub Email: ${gitData.email}
+\nGithub Repos URL: ${gitData.repos_url}
+
 
 `)
-var writeResult = fs.writeFileSync( 'readme.md',result )
+fs.writeFileSync( 'Readme.md',result )
 console.log("file generated...")
 }
 main();
